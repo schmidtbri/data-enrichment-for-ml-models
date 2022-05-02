@@ -137,3 +137,7 @@ reports/
 vendors/
 
 .pytype
+
+.terraform
+.terraform.*
+*.tfstate

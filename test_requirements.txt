@@ -77,13 +77,13 @@ pydocstyle==6.1.1
     # via pylama
 pyflakes==2.4.0
     # via pylama
-pylama==8.3.7
+pylama==8.3.8
     # via -r test_requirements.in
 pyparsing==3.0.7
     # via
     #   -c requirements.txt
     #   packaging
-pytest==7.0.1
+pytest==7.1.0
     # via
     #   -r test_requirements.in
     #   pytest-html
@@ -133,7 +133,7 @@ typing-extensions==4.1.1
     #   typing-inspect
 typing-inspect==0.7.1
     # via libcst
-urllib3==1.26.8
+urllib3==1.26.9
     # via
     #   -c requirements.txt
     #   requests

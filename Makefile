@@ -27,6 +27,7 @@ test-dependencies: ## install dependencies from test_requirements.txt
 update-dependencies:  ## Update dependency versions
 	pip-compile requirements.in > requirements.txt
 	pip-compile test_requirements.in > test_requirements.txt
+	pip-compile service_requirements.in > service_requirements.txt
 
 clean-venv: ## remove all packages from virtual environment
 	pip freeze | grep -v "^-e" | xargs pip uninstall -y
@@ -70,3 +71,6 @@ check-pytype:  ## perform static code analysis
 
 convert-post:  ## Convert the notebook into Markdown file
 	jupyter nbconvert --to markdown blog_post/post.ipynb --output-dir='./blog_post'
+
+build_image:  ## Build docker image
+	docker build -t insurance_charges_model_service:latest .

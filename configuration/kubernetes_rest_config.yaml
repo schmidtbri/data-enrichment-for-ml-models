@@ -1,0 +1,23 @@
+service_title: Insurance Charges Model Service
+models:
+  - qualified_name: insurance_charges_model
+    class_path: insurance_charges_model.prediction.model.InsuranceChargesModel
+    create_endpoint: true
+    decorators:
+      - class_path: data_enrichment.postgresql.PostgreSQLEnrichmentDecorator
+        configuration:
+          host: "postgres-postgresql.model-services.svc.cluster.local"
+          port: "5432"
+          username: "postgres"
+          password: "${POSTGRES_PASSWORD}"
+          database: "postgres"
+          table: "clients"
+          index_field_name: "ssn"
+          index_field_type: "str"
+          enrichment_fields:
+            - "age"
+            - "sex"
+            - "bmi"
+            - "children"
+            - "smoker"
+            - "region"

@@ -1,7 +1,9 @@
+import os
 from typing import List
 from pydantic import BaseModel, create_model
 import psycopg2
 from ml_base.decorator import MLModelDecorator
+from ml_base.ml_model import MLModelSchemaValidationException
 
 
 class PostgreSQLEnrichmentDecorator(MLModelDecorator):
@@ -10,6 +12,10 @@ class PostgreSQLEnrichmentDecorator(MLModelDecorator):
     def __init__(self, host: str, port: str, username: str, password: str, database: str,
                  table: str, index_field_name: str, index_field_type: str,
                  enrichment_fields: List[str]) -> None:
+        # if password has ${}, then replace with environment variable
+        if password[0:2] == "${" and password[-1] == "}":
+            password = os.environ[password[2:-1]]
+
         super().__init__(host=host, port=port, username=username, password=password,
                          database=database, table=table, index_field_name=index_field_name,
                          index_field_type=index_field_type, enrichment_fields=enrichment_fields)
@@ -18,8 +24,10 @@ class PostgreSQLEnrichmentDecorator(MLModelDecorator):
     @property
     def input_schema(self) -> BaseModel:
         # converting the index field type from a string to a class
-        index_field_type = getattr(__builtins__,
-                                   self._configuration["index_field_type"])
+        try:
+            index_field_type = __builtins__[self._configuration["index_field_type"]]
+        except TypeError as e:
+            index_field_type = __builtins__.__dict__[self._configuration["index_field_type"]]
 
         input_schema = self._model.input_schema
 
@@ -30,7 +38,7 @@ class PostgreSQLEnrichmentDecorator(MLModelDecorator):
         }
         for field_name, schema in input_schema.__fields__.items():
             # remove enrichment_fields from schema because they'll be added from the
-            # database and dont need to be provided by the client
+            # database and don't need to be provided by the client
             if field_name not in self._configuration["enrichment_fields"]:
                 if schema.required:
                     fields[field_name] = (schema.type_, ...)
@@ -90,11 +98,17 @@ class PostgreSQLEnrichmentDecorator(MLModelDecorator):
                 raise ValueError("Could not find value for field '{}'.".format(field_name))
 
         # making a prediction with the model, using the enriched fields
-        enriched_data = self._model.input_schema(**enriched_data)
+        try:
+            enriched_data = self._model.input_schema(**enriched_data)
+        except ValueError as e:
+            raise MLModelSchemaValidationException(str(e))
         prediction = self._model.predict(data=enriched_data)
 
         return prediction
 
     def __del__(self):
-        if self._connection is not None:
-            self._connection.close()
+        try:
+            if self.__dict__["_connection"] is not None:
+                self.__dict__["_connection"].close()
+        except KeyError:
+            pass
