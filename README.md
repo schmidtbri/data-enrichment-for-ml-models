@@ -2,7 +2,7 @@
 
 Data enrichment for machine learning models.
 
-This code is used in this [blog post]().
+This code is used in this [blog post](https://brianschmidt-78145.medium.com/data-enrichment-for-ml-model-deployments-bb9090ea5fd4).
 
 ## Requirements
 
